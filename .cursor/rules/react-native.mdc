@@ -1,0 +1,39 @@
+---
+description: Best practices for React Native, Expo, and NativeWind development
+globs: "**/*.{ts,tsx,js,jsx,json}"
+---
+
+# React Native & Expo Best Practices
+
+## Tech Stack
+- **Framework**: Expo (Managed Workflow)
+- **Language**: TypeScript
+- **Package Manager**: Bun
+- **Styling**: NativeWind (Tailwind CSS)
+- **Navigation**: Expo Router (preferred) or React Navigation
+
+## General Guidelines
+- **Modern Syntax**: Always use modern JavaScript/TypeScript features (e.g., `async/await`, arrow functions, destructuring).
+- **Functional Components**: Use functional components with Hooks. Avoid class components.
+- **Strict Types**: Use strict TypeScript types. Avoid `any` where possible.
+
+## Styling (NativeWind/Tailwind)
+- Use `className` prop for styling components (NativeWind).
+- For conditional styles, use libraries like `clsx` or `tailwind-merge` if available, or template literals.
+- Ensure `global.css` is imported in the root component.
+
+## React Native vs. React Web
+- **Primitives**: Use `<View>`, `<Text>`, `<Image>`, `<TouchableOpacity>` (or `<Pressable>`) instead of `<div>`, `<span>`, `<img>`, `<button>`.
+- **Text Handling**: All text must be wrapped in `<Text>` components.
+- **Flexbox**: Flexbox is the default layout model and defaults to `flexDirection: 'column'` (unlike `row` in web).
+- **Platform Specifics**: Handle platform differences using `Platform.OS` or platform-specific file extensions (`.ios.tsx`, `.android.tsx`).
+
+## Documentation & Resources
+- Follow best practices from:
+  - [React Native Docs](https://reactnative.dev/docs)
+  - [React Docs](https://react.dev)
+  - [Expo Docs](https://docs.expo.dev)
+
+## Workflow
+- When explaining new concepts, explicitly highlight differences from React Web (DOM vs Native, Styling, etc.).
+- Use `bun` for all package management commands (`bun install`, `bun add`).
