@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import pokemonData from '../assets/pokemon-data.json';
 
 // Use the environment variable if available, otherwise fall back to the hardcoded value
 // EXPO_PUBLIC_ variables are automatically available in the client code
@@ -8,12 +9,27 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.36:8080';
 // In this case, since we are using a network IP (not localhost), it should be the same for all
 const BASE_URL = API_URL;
 
-export const classifyImage = async (imageUri: string) => {
+export interface ClassificationResponse {
+  filename: string;
+  pokemon: string;
+  score: number;
+  all_predictions: Array<{ label: string; score: number }>;
+}
+
+export interface Pokemon3DResponse {
+  forms: Array<{
+    name: string;
+    model: string;
+  }>;
+  [key: string]: any;
+}
+
+// Use the imported JSON directly
+const pokemonCache: Pokemon3DResponse[] = pokemonData as Pokemon3DResponse[];
+
+export const classifyImage = async (imageUri: string): Promise<ClassificationResponse> => {
   const formData = new FormData();
 
-  // Append the image file to the form data
-  // The 'name' field should match what the server expects (e.g., 'file')
-  // We construct a file object from the URI
   const filename = imageUri.split('/').pop() || 'photo.jpg';
   const match = /\.(\w+)$/.exec(filename);
   const type = match ? `image/${match[1]}` : 'image/jpeg';
@@ -43,5 +59,18 @@ export const classifyImage = async (imageUri: string) => {
   } catch (error) {
     console.error('Error classifying image:', error);
     throw error;
+  }
+};
+
+export const getPokemonModel = (pokemonName: string): string | null => {
+  try {
+    const pokemon = pokemonCache.find(
+      (p) => p.forms?.[0]?.name?.toLowerCase() === pokemonName.toLowerCase()
+    );
+
+    return pokemon?.forms?.[0]?.model || null;
+  } catch (error) {
+    console.error('Error fetching pokemon model:', error);
+    return null;
   }
 };

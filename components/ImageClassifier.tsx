@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { classifyImage } from '../services/api';
+import { classifyImage, getPokemonModel } from '../services/api';
 
 export function ImageClassifier() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -49,10 +49,18 @@ export function ImageClassifier() {
 
   const handleClassify = async (uri: string) => {
     try {
+      // 1. Classify image
       const data = await classifyImage(uri);
-      Alert.alert('Classification Result', JSON.stringify(data, null, 2), [
-        { text: 'OK', onPress: () => setLoading(false) },
-      ]);
+
+      // 2. Fetch 3D model
+      const modelUrl = getPokemonModel(data.pokemon);
+
+      // 3. Show result
+      const message = modelUrl
+        ? `Pokemon: ${data.pokemon}\nModel: ${modelUrl}`
+        : `Pokemon: ${data.pokemon}\n(No model found)`;
+
+      Alert.alert('Pokemon Found!', message, [{ text: 'OK', onPress: () => setLoading(false) }]);
     } catch (error) {
       Alert.alert('Error', 'Failed to classify image', [
         { text: 'OK', onPress: () => setLoading(false) },
