@@ -2,19 +2,20 @@ import { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { classifyImage, getPokemonModel } from '../services/api';
+import { Pokemon3DModel } from './Pokemon3DModel';
 
 export function ImageClassifier() {
   const [permission, requestPermission] = useCameraPermissions();
   const [loading, setLoading] = useState(false);
+  const [pokemonModel, setPokemonModel] = useState<string | null>(null);
+  const [pokemonName, setPokemonName] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
 
   if (!permission) {
-    // Camera permissions are still loading.
     return <View />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet.
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text className="mb-4 text-center text-lg">We need your permission to show the camera</Text>
@@ -29,6 +30,10 @@ export function ImageClassifier() {
 
   const takePhoto = async () => {
     if (!cameraRef.current) return;
+
+    // Reset previous result
+    setPokemonModel(null);
+    setPokemonName(null);
 
     try {
       setLoading(true);
@@ -49,10 +54,7 @@ export function ImageClassifier() {
 
   const handleClassify = async (uri: string) => {
     try {
-      // 1. Classify image
       const data = await classifyImage(uri);
-
-      // 2. Fetch 3D model
       const modelUrl = getPokemonModel(data.pokemon);
 
       // 3. Show result
@@ -61,30 +63,56 @@ export function ImageClassifier() {
         : `Pokemon: ${data.pokemon}\n(No model found)`;
 
       Alert.alert('Pokemon Found!', message, [{ text: 'OK', onPress: () => setLoading(false) }]);
+      setPokemonName(data.pokemon);
+      setPokemonModel(modelUrl);
     } catch (error) {
-      Alert.alert('Error', 'Failed to classify image', [
-        { text: 'OK', onPress: () => setLoading(false) },
-      ]);
+      Alert.alert('Error', 'Failed to classify image');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const reset = () => {
+    setPokemonModel(null);
+    setPokemonName(null);
   };
 
   return (
     <View className="flex-1">
       <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
-      <View className="absolute top-0 right-0 bottom-0 left-0 items-center justify-end pb-20">
-        {loading ? (
-          <View className="items-center justify-center rounded-full bg-black/50 p-8">
-            <ActivityIndicator size="large" color="#ffffff" />
-            <Text className="mt-2 font-semibold text-white">Analyzing...</Text>
+
+      {/* 3D Model Overlay */}
+      {pokemonModel && (
+        <View className="absolute top-0 right-0 bottom-0 left-0 bg-black/40">
+          <Pokemon3DModel url={pokemonModel} />
+          <View className="absolute top-20 w-full items-center">
+            <Text className="text-4xl font-bold text-white shadow-lg">{pokemonName}</Text>
           </View>
-        ) : (
           <TouchableOpacity
-            onPress={takePhoto}
-            className="h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-white/30 active:bg-white/50">
-            <View className="h-16 w-16 rounded-full bg-white" />
+            onPress={reset}
+            className="absolute bottom-10 self-center rounded-full bg-red-500 px-8 py-3">
+            <Text className="font-bold text-white">Close</Text>
           </TouchableOpacity>
-        )}
-      </View>
+        </View>
+      )}
+
+      {/* Camera UI (hidden when model is showing) */}
+      {!pokemonModel && (
+        <View className="absolute top-0 right-0 bottom-0 left-0 items-center justify-end pb-20">
+          {loading ? (
+            <View className="items-center justify-center rounded-full bg-black/50 p-8">
+              <ActivityIndicator size="large" color="#ffffff" />
+              <Text className="mt-2 font-semibold text-white">Analyzing...</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={takePhoto}
+              className="h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-white/30 active:bg-white/50">
+              <View className="h-16 w-16 rounded-full bg-white" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
     </View>
   );
 }
