@@ -3,7 +3,7 @@ import pokemonData from '../assets/pokemon-data.json';
 
 // Use the environment variable if available, otherwise fall back to the hardcoded value
 // EXPO_PUBLIC_ variables are automatically available in the client code
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.36:8080';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.36:8080';
 
 // Determine the base URL based on the platform
 // In this case, since we are using a network IP (not localhost), it should be the same for all

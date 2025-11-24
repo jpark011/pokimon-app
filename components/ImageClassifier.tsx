@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { WebView } from 'react-native-webview';
-import { classifyImage } from '../services/api';
+import { classifyImage, API_URL } from '../services/api';
 
 export function ImageClassifier() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -18,7 +18,6 @@ export function ImageClassifier() {
   const [pokemonName, setPokemonName] = useState<string | null>(null);
   const [showWebView, setShowWebView] = useState(false);
   const cameraRef = useRef<CameraView>(null);
-  const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.36:8080';
 
   if (!permission) {
     return <View />;
